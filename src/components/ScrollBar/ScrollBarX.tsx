@@ -96,7 +96,9 @@ export const ScrollBarX: React.FC<ScrollBarXProps> = observer(({ store }) => {
     <div 
       className={`react-scroller-scrollbar react-scroller-scrollbar-x ${
         store.isScrollbarVisible ? 'visible' : ''
-      } ${store.isDragging ? 'active' : ''}`}
+      } ${store.isDragging ? 'active' : ''} ${
+        store.options.indicatorOnly ? 'indicator-only' : ''
+      }`}
       style={{
         height: `${store.options.scrollbarSize}px`,
       }}

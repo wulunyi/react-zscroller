@@ -62,7 +62,8 @@ export class ScrollerStore {
       
       // 滚动条配置
       scrollbarMode: options.scrollbarMode || 'scrolling',
-      scrollbarFadeDelay: options.scrollbarFadeDelay !== undefined ? options.scrollbarFadeDelay : 200,
+      scrollbarFadeDelay: options.scrollbarFadeDelay !== undefined ? options.scrollbarFadeDelay : 500,
+      indicatorOnly: options.indicatorOnly !== undefined ? options.indicatorOnly : false,
     };
     
     // 如果设置为始终显示，则初始设置为可见
@@ -298,10 +299,17 @@ export class ScrollerStore {
   
   // 完成滚动
   private finishScrolling(): void {
-    console.log('结束滚动');
     this.isScrolling = false;
     this.options.onScrollEnd();
-    // 不在这里处理滚动条隐藏
+    
+    // 在回调后处理滚动条隐藏逻辑
+    if (this.options.scrollbarMode === 'scrolling' && !this.isScrollbarHovered) {
+      setTimeout(() => {
+        if (!this.isDragging && !this.isScrolling && !this.isScrollbarHovered) {
+          this.hideScrollbars();
+        }
+      }, this.options.scrollbarFadeDelay);
+    }
   }
 
   private updateMaxScrollValues(): void {
@@ -368,5 +376,24 @@ export class ScrollerStore {
   // 添加新方法
   setScrollbarHovered(hovered: boolean): void {
     this.isScrollbarHovered = hovered;
+  }
+
+  // 添加公共方法用于滚轮滚动结束
+  finishWheelScrolling(): void {
+    // 如果已经不在滚动状态则不执行
+    if (!this.isScrolling) return;
+    
+    // 使用与 finishScrolling 相同的逻辑
+    this.isScrolling = false;
+    this.options.onScrollEnd();
+    
+    // 处理滚动条隐藏逻辑
+    if (this.options.scrollbarMode === 'scrolling' && !this.isScrollbarHovered) {
+      setTimeout(() => {
+        if (!this.isDragging && !this.isScrolling && !this.isScrollbarHovered) {
+          this.hideScrollbars();
+        }
+      }, this.options.scrollbarFadeDelay);
+    }
   }
 } 

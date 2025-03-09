@@ -39,18 +39,36 @@ export const ScrollBarY: React.FC<ScrollBarYProps> = observer(({ store }) => {
     startMouseY.current = e.clientY;
     startScrollY.current = store.scrollY;
     
+    // 使用 RAF 进行更流畅的拖动
+    let animationFrameId: number | null = null;
+    let lastClientY = e.clientY;
+    
     const handleMouseMove = (e: MouseEvent) => {
       if (!isDragging.current) return;
       
-      const deltaY = e.clientY - startMouseY.current;
-      const scrollFactor = store.maxScrollY / (store.viewportHeight - thumbHeight * store.viewportHeight / 100);
-      const newScrollY = startScrollY.current + deltaY * scrollFactor;
+      // 保存当前鼠标位置
+      lastClientY = e.clientY;
       
-      store.scrollTo(store.scrollX, newScrollY);
+      // 使用 requestAnimationFrame 优化滚动性能
+      if (animationFrameId === null) {
+        animationFrameId = requestAnimationFrame(() => {
+          const deltaY = lastClientY - startMouseY.current;
+          const scrollFactor = store.maxScrollY / (store.viewportHeight - thumbHeight * store.viewportHeight / 100);
+          const newScrollY = startScrollY.current + deltaY * scrollFactor;
+          
+          store.scrollTo(store.scrollX, newScrollY);
+          animationFrameId = null;
+        });
+      }
     };
     
     const handleMouseUp = () => {
       isDragging.current = false;
+      
+      // 取消可能存在的动画帧
+      if (animationFrameId !== null) {
+        cancelAnimationFrame(animationFrameId);
+      }
       
       // 拖动结束后延迟一小段时间再触发隐藏滚动条的逻辑
       if (store.options.scrollbarMode === 'scrolling') {
@@ -100,7 +118,9 @@ export const ScrollBarY: React.FC<ScrollBarYProps> = observer(({ store }) => {
     <div 
       className={`react-scroller-scrollbar react-scroller-scrollbar-y ${
         store.isScrollbarVisible ? 'visible' : ''
-      } ${store.isDragging ? 'active' : ''}`}
+      } ${store.isDragging ? 'active' : ''} ${
+        store.options.indicatorOnly ? 'indicator-only' : ''
+      }`}
       style={{
         width: `${store.options.scrollbarSize}px`
       }}

@@ -29,6 +29,7 @@ export interface ScrollerStore {
   showScrollbars(): void;
   hideScrollbars(): void;
   setScrollbarHovered(hovered: boolean): void;
+  finishWheelScrolling(): void;
 }
 
 export type ScrollDirection = 'horizontal' | 'vertical' | 'both' | 'none';
@@ -86,6 +87,8 @@ export interface ScrollOptions {
   wheelAnimationDuration?: number;
   /** 滚动条显示模式: 'never'(从不显示), 'always'(始终显示), 'scrolling'(滚动时显示), 'hover'(悬停时显示) */
   scrollbarMode?: 'never' | 'always' | 'scrolling' | 'hover';
+  /** 是否只显示滚动条指示器而隐藏轨道 */
+  indicatorOnly?: boolean;
   /** 滚动条消失延迟(毫秒) */
   scrollbarFadeDelay?: number;
 }

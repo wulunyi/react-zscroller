@@ -20,8 +20,9 @@ export const PCScroller: React.FC<ScrollerProps> = observer(({
   const localStoreRef = useRef<ScrollerStore>(new ScrollerStore({ ...options, bounceEnabled: false }));
   const store = externalStore || localStoreRef.current;
   
-  const lastWheelTime = useRef<number>(0);
   const scrollbarTimer = useRef<number | null>(null);
+  const lastWheelTime = useRef<number>(0);
+  const wheelEndTimer = useRef<number | null>(null);
   
   // 初始化和清理
   useEffect(() => {
@@ -67,6 +68,9 @@ export const PCScroller: React.FC<ScrollerProps> = observer(({
   const handleWheel = useCallback((e: WheelEvent) => {
     e.preventDefault();
     
+    // 记录最后滚轮时间
+    lastWheelTime.current = Date.now();
+    
     // 获取滚动增量
     let { deltaX, deltaY } = e;
     
@@ -93,6 +97,19 @@ export const PCScroller: React.FC<ScrollerProps> = observer(({
     
     // 直接滚动，不使用动画
     store.scrollBy(deltaX, deltaY);
+    
+    // 设置一个检测滚轮滚动结束的计时器
+    if (wheelEndTimer.current !== null) {
+      clearTimeout(wheelEndTimer.current);
+    }
+    wheelEndTimer.current = window.setTimeout(() => {
+      // 检查是否真的停止滚动一段时间
+      const timeSinceLastWheel = Date.now() - lastWheelTime.current;
+      if (timeSinceLastWheel > 150 && store.isScrolling) {
+        store.finishWheelScrolling();
+      }
+      wheelEndTimer.current = null;
+    }, 200); // 200ms 无滚轮活动视为滚动结束
   }, [store]);
   
   // 监听事件
@@ -105,6 +122,12 @@ export const PCScroller: React.FC<ScrollerProps> = observer(({
     
     return () => {
       container.removeEventListener('wheel', handleWheel);
+      
+      // 清理滚轮结束计时器
+      if (wheelEndTimer.current !== null) {
+        clearTimeout(wheelEndTimer.current);
+        wheelEndTimer.current = null;
+      }
     };
   }, [handleWheel]);
   
@@ -212,7 +235,8 @@ export const PCScroller: React.FC<ScrollerProps> = observer(({
 
   // 监听滚动事件，手动处理滚动条隐藏
   useEffect(() => {
-    // 添加一个变量来跟踪上次滚动位置
+    // 添加防抖控制
+    let debounceTimeout: number | null = null;
     let lastX = store.scrollX;
     let lastY = store.scrollY;
     let inactivityTimer: number | null = null;
@@ -226,9 +250,14 @@ export const PCScroller: React.FC<ScrollerProps> = observer(({
       lastX = x;
       lastY = y;
       
-      if (store.options.scrollbarMode !== 'never') {
-        // 有滚动发生时显示滚动条
-        if (hasScrolled) {
+      if (hasScrolled && store.options.scrollbarMode !== 'never') {
+        // 清除之前的防抖定时器
+        if (debounceTimeout) {
+          clearTimeout(debounceTimeout);
+        }
+        
+        // 设置防抖，限制频繁更新
+        debounceTimeout = window.setTimeout(() => {
           showScrollbars();
           
           // 清除现有的不活动计时器
@@ -245,9 +274,11 @@ export const PCScroller: React.FC<ScrollerProps> = observer(({
                 hideScrollbars();
               }
               inactivityTimer = null;
-            }, 100); // 短暂停顿后判断滚动是否完全停止
+            }, 100);
           }
-        }
+          
+          debounceTimeout = null;
+        }, 10); // 10ms的防抖时间，平衡响应性和性能
       }
     });
     
@@ -255,6 +286,9 @@ export const PCScroller: React.FC<ScrollerProps> = observer(({
       disposer();
       if (inactivityTimer) {
         clearTimeout(inactivityTimer);
+      }
+      if (debounceTimeout) {
+        clearTimeout(debounceTimeout);
       }
     };
   }, [store, showScrollbars, hideScrollbars]);

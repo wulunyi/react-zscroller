@@ -60,8 +60,23 @@
   top: 0;
 }
 
+/* 当只显示指示器时的特殊样式 - 增加特异性 */
+.react-scroller-scrollbar.indicator-only {
+  background: transparent !important; /* 确保覆盖其他样式 */
+}
+
+/* 单独设置指示器样式，确保在轨道透明时仍可见 */
+.react-scroller-scrollbar.indicator-only .react-scroller-indicator {
+  background: rgba(0, 0, 0, 0.4);
+}
+
+/* 在悬停时增强指示器可见度 */
+.react-scroller-scrollbar.indicator-only:hover .react-scroller-indicator {
+  background: rgba(0, 0, 0, 0.6);
+}
+
 /* 悬停效果 */
-.react-scroller-scrollbar:hover {
+.react-scroller-scrollbar:not(.indicator-only):hover {
   background: rgba(0, 0, 0, 0.15);
 }
 
