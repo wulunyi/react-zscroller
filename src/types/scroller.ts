@@ -9,6 +9,7 @@ export interface ScrollerStore {
   isMomentumScrolling: boolean;
   isScrolling: boolean;
   isScrollbarVisible: boolean;
+  isScrollbarHovered: boolean;
   
   contentWidth: number;
   contentHeight: number;
@@ -24,6 +25,10 @@ export interface ScrollerStore {
   setContentDimensions(width: number, height: number): void;
   setViewportDimensions(width: number, height: number): void;
   setScrollPosition(x: number, y: number): void;
+  calculateThumbSizeRatio(): number;
+  showScrollbars(): void;
+  hideScrollbars(): void;
+  setScrollbarHovered(hovered: boolean): void;
 }
 
 export type ScrollDirection = 'horizontal' | 'vertical' | 'both' | 'none';
@@ -79,6 +84,10 @@ export interface ScrollOptions {
   animationDuration?: number;
   /** 滚轮动画持续时间（毫秒） */
   wheelAnimationDuration?: number;
+  /** 滚动条显示模式: 'never'(从不显示), 'always'(始终显示), 'scrolling'(滚动时显示), 'hover'(悬停时显示) */
+  scrollbarMode?: 'never' | 'always' | 'scrolling' | 'hover';
+  /** 滚动条消失延迟(毫秒) */
+  scrollbarFadeDelay?: number;
 }
 
 export interface ScrollerProps {

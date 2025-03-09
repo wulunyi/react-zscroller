@@ -11,6 +11,7 @@ export class ScrollerStore {
   isMomentumScrolling: boolean = false;
   isScrolling: boolean = false;
   isScrollbarVisible: boolean = false;
+  isScrollbarHovered: boolean = false;
   
   // 尺寸数据
   contentWidth: number = 0;
@@ -57,8 +58,15 @@ export class ScrollerStore {
       // 回调函数
       onScroll: options.onScroll || ((x: number, y: number) => {}),
       onScrollStart: options.onScrollStart || (() => {}),
-      onScrollEnd: options.onScrollEnd || (() => {})
+      onScrollEnd: options.onScrollEnd || (() => {}),
+      
+      // 滚动条配置
+      scrollbarMode: options.scrollbarMode || 'scrolling',
+      scrollbarFadeDelay: options.scrollbarFadeDelay !== undefined ? options.scrollbarFadeDelay : 200,
     };
+    
+    // 如果设置为始终显示，则初始设置为可见
+    this.isScrollbarVisible = this.options.scrollbarMode === 'always';
     
     makeAutoObservable(this, {
       scrollX: observable,
@@ -69,6 +77,7 @@ export class ScrollerStore {
       isMomentumScrolling: observable,
       isScrolling: observable,
       isScrollbarVisible: observable,
+      isScrollbarHovered: observable,
       
       scrollTo: action,
       scrollBy: action,
@@ -76,6 +85,10 @@ export class ScrollerStore {
       endDrag: action,
       setContentDimensions: action,
       setViewportDimensions: action,
+      setScrollPosition: action,
+      showScrollbars: action,
+      hideScrollbars: action,
+      setScrollbarHovered: action,
     });
   }
 
@@ -118,8 +131,10 @@ export class ScrollerStore {
       this.options.onScrollStart();
     }
     
-    // 显示滚动条
-    this.isScrollbarVisible = true;
+    // 只有非 never 模式才显示滚动条
+    if (this.options.scrollbarMode !== 'never') {
+      this.isScrollbarVisible = true;
+    }
     
     // 触发滚动回调
     this.options.onScroll(this.scrollX, this.scrollY);
@@ -283,18 +298,10 @@ export class ScrollerStore {
   
   // 完成滚动
   private finishScrolling(): void {
+    console.log('结束滚动');
     this.isScrolling = false;
     this.options.onScrollEnd();
-    
-    // 渐隐滚动条，与原生浏览器一致
-    if (!this.isDragging) {
-      // 延迟隐藏，给用户一点时间看到滚动位置
-      setTimeout(() => {
-        if (!this.isDragging && !this.isScrolling) {
-          this.isScrollbarVisible = false;
-        }
-      }, 1500);
-    }
+    // 不在这里处理滚动条隐藏
   }
 
   private updateMaxScrollValues(): void {
@@ -325,12 +332,17 @@ export class ScrollerStore {
       y = Math.max(0, Math.min(y, this.maxScrollY));
     }
     
+    // 检查是否真的滚动了
+    const hasScrolled = this.scrollX !== x || this.scrollY !== y;
+    
     // 更新滚动位置
     this.scrollX = x;
     this.scrollY = y;
     
-    // 显示滚动条
-    this.isScrollbarVisible = true;
+    // 只有真正滚动时才显示滚动条（除非是 always 模式）
+    if (hasScrolled && this.options.scrollbarMode !== 'never') {
+      this.isScrollbarVisible = true;
+    }
     
     // 触发滚动回调
     this.options.onScroll(x, y);
@@ -339,5 +351,22 @@ export class ScrollerStore {
   // 更改为公开方法，让滚动条组件能够使用
   calculateThumbSizeRatio(): number {
     return this.viewportHeight / Math.max(this.contentHeight, 1);
+  }
+
+  // 鼠标进入滚动区域
+  showScrollbars(): void {
+    if (this.options.scrollbarMode !== 'never') {
+      this.isScrollbarVisible = true;
+    }
+  }
+
+  // 鼠标离开滚动区域
+  hideScrollbars(): void {
+    this.isScrollbarVisible = false;
+  }
+
+  // 添加新方法
+  setScrollbarHovered(hovered: boolean): void {
+    this.isScrollbarHovered = hovered;
   }
 } 

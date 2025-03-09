@@ -252,6 +252,102 @@ function MyComponent() {
         </div>
       </section>
       
+      {/* 添加一个新的 section 用于展示滚动条模式 */}
+      <section className="demo-section">
+        <h2>滚动条显示模式</h2>
+        <div className="description">
+          <p>可以通过 scrollbarMode 选项配置滚动条的显示方式</p>
+        </div>
+        <div className="demos-row">
+          <div className="demo-quarter">
+            <h3>从不显示</h3>
+            <p>scrollbarMode: 'never'</p>
+            <Scroller
+              width="100%"
+              height="200px"
+              options={{
+                scrollbarMode: 'never'
+              }}
+            >
+              <div className="content-small theme-blue">
+                <h4>滚动条不显示</h4>
+                {Array.from({ length: 20 }).map((_, i) => (
+                  <div key={i} className="content-item">
+                    项目 {i + 1}
+                  </div>
+                ))}
+              </div>
+            </Scroller>
+          </div>
+          
+          <div className="demo-quarter">
+            <h3>始终显示</h3>
+            <p>scrollbarMode: 'always'</p>
+            <Scroller
+              width="100%"
+              height="200px"
+              options={{
+                scrollbarMode: 'always'
+              }}
+            >
+              <div className="content-small theme-green">
+                <h4>滚动条始终可见</h4>
+                {Array.from({ length: 20 }).map((_, i) => (
+                  <div key={i} className="content-item">
+                    项目 {i + 1}
+                  </div>
+                ))}
+              </div>
+            </Scroller>
+          </div>
+          
+          <div className="demo-quarter">
+            <h3>滚动时显示</h3>
+            <p>scrollbarMode: 'scrolling'</p>
+            <Scroller
+              width="100%"
+              height="200px"
+              options={{
+                scrollbarMode: 'scrolling',
+                scrollbarFadeDelay: 1000
+              }}
+            >
+              <div className="content-small theme-purple">
+                <h4>滚动时显示</h4>
+                <p>滚动结束后 1 秒消失</p>
+                {Array.from({ length: 20 }).map((_, i) => (
+                  <div key={i} className="content-item">
+                    项目 {i + 1}
+                  </div>
+                ))}
+              </div>
+            </Scroller>
+          </div>
+          
+          <div className="demo-quarter">
+            <h3>悬停时显示</h3>
+            <p>scrollbarMode: 'hover'</p>
+            <Scroller
+              width="100%"
+              height="200px"
+              options={{
+                scrollbarMode: 'hover'
+              }}
+            >
+              <div className="content-small theme-orange">
+                <h4>鼠标悬停时显示</h4>
+                <p>将鼠标移入此区域</p>
+                {Array.from({ length: 20 }).map((_, i) => (
+                  <div key={i} className="content-item">
+                    项目 {i + 1}
+                  </div>
+                ))}
+              </div>
+            </Scroller>
+          </div>
+        </div>
+      </section>
+      
       <footer>
         <p>React Scroller - 一个高性能的滚动组件</p>
         <p>支持 PC 和移动端、自定义滚动条和动画</p>

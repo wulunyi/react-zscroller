@@ -4,6 +4,7 @@ import { ScrollerStore } from '../../store';
 import { ScrollBarX, ScrollBarY } from '../ScrollBar';
 import type { ScrollerProps } from '../../types';
 import '../../styles/index.css';
+import { autorun } from 'mobx';
 
 export const PCScroller: React.FC<ScrollerProps> = observer(({ 
   children, 
@@ -20,6 +21,7 @@ export const PCScroller: React.FC<ScrollerProps> = observer(({
   const store = externalStore || localStoreRef.current;
   
   const lastWheelTime = useRef<number>(0);
+  const scrollbarTimer = useRef<number | null>(null);
   
   // 初始化和清理
   useEffect(() => {
@@ -39,6 +41,13 @@ export const PCScroller: React.FC<ScrollerProps> = observer(({
         content.scrollWidth,
         content.scrollHeight
       );
+      
+      // 如果不是 always 模式，确保初始时滚动条是隐藏的
+      if (store.options.scrollbarMode !== 'always') {
+        store.hideScrollbars();
+      } else {
+        store.showScrollbars();
+      }
     };
     
     // 初始化尺寸
@@ -145,6 +154,111 @@ export const PCScroller: React.FC<ScrollerProps> = observer(({
     }
   }, [store]);
   
+  // 修改 showScrollbars 和 hideScrollbars 方法
+  const showScrollbars = useCallback(() => {
+    // 清除可能存在的隐藏定时器
+    if (scrollbarTimer.current !== null) {
+      clearTimeout(scrollbarTimer.current);
+      scrollbarTimer.current = null;
+    }
+    
+    // 使用 store 的方法显示滚动条，而不是直接修改属性
+    store.showScrollbars();
+  }, [store]);
+
+  const hideScrollbars = useCallback(() => {
+    // 如果是 always 模式或鼠标正在滚动条上，直接返回不做任何处理
+    if (store.options.scrollbarMode === 'always' || store.isScrollbarHovered) {
+      return;
+    }
+    
+    // 清除可能存在的隐藏定时器
+    if (scrollbarTimer.current !== null) {
+      clearTimeout(scrollbarTimer.current);
+    }
+    
+    // 设置新的隐藏定时器
+    scrollbarTimer.current = window.setTimeout(() => {
+      // 再次检查，确保鼠标不在滚动条上
+      if (!store.isDragging && !store.isScrollbarHovered) {
+        store.hideScrollbars();
+      }
+      scrollbarTimer.current = null;
+    }, store.options.scrollbarFadeDelay);
+  }, [store]);
+
+  // 清理定时器
+  useEffect(() => {
+    return () => {
+      if (scrollbarTimer.current !== null) {
+        clearTimeout(scrollbarTimer.current);
+        scrollbarTimer.current = null;
+      }
+    };
+  }, []);
+
+  // 修改悬停处理函数
+  const handleMouseEnter = useCallback(() => {
+    if (store.options.scrollbarMode === 'hover') {
+      showScrollbars();
+    }
+  }, [store, showScrollbars]);
+
+  const handleMouseLeave = useCallback(() => {
+    if (store.options.scrollbarMode === 'hover') {
+      hideScrollbars();
+    }
+  }, [store, hideScrollbars]);
+
+  // 监听滚动事件，手动处理滚动条隐藏
+  useEffect(() => {
+    // 添加一个变量来跟踪上次滚动位置
+    let lastX = store.scrollX;
+    let lastY = store.scrollY;
+    let inactivityTimer: number | null = null;
+    
+    const disposer = autorun(() => {
+      const x = store.scrollX;
+      const y = store.scrollY;
+      
+      // 检测滚动位置是否变化
+      const hasScrolled = x !== lastX || y !== lastY;
+      lastX = x;
+      lastY = y;
+      
+      if (store.options.scrollbarMode !== 'never') {
+        // 有滚动发生时显示滚动条
+        if (hasScrolled) {
+          showScrollbars();
+          
+          // 清除现有的不活动计时器
+          if (inactivityTimer) {
+            clearTimeout(inactivityTimer);
+            inactivityTimer = null;
+          }
+          
+          // 设置一个新的计时器来检测滚动停止
+          if (store.options.scrollbarMode === 'scrolling' || 
+              (store.options.scrollbarMode === 'hover' && !store.isScrolling)) {
+            inactivityTimer = window.setTimeout(() => {
+              if (!store.isDragging) {
+                hideScrollbars();
+              }
+              inactivityTimer = null;
+            }, 100); // 短暂停顿后判断滚动是否完全停止
+          }
+        }
+      }
+    });
+    
+    return () => {
+      disposer();
+      if (inactivityTimer) {
+        clearTimeout(inactivityTimer);
+      }
+    };
+  }, [store, showScrollbars, hideScrollbars]);
+  
   return (
     <div
       ref={containerRef}
@@ -158,6 +272,8 @@ export const PCScroller: React.FC<ScrollerProps> = observer(({
       tabIndex={0}
       onClick={handleContainerClick}
       onKeyDown={handleKeyDown}
+      onMouseEnter={handleMouseEnter}
+      onMouseLeave={handleMouseLeave}
     >
       <div
         ref={contentRef}
@@ -169,11 +285,11 @@ export const PCScroller: React.FC<ScrollerProps> = observer(({
         {children}
       </div>
       
-      {store.maxScrollX > 0 && (
+      {store.options.scrollbarMode !== 'never' && store.maxScrollX > 0 && (
         <ScrollBarX store={store} />
       )}
       
-      {store.maxScrollY > 0 && (
+      {store.options.scrollbarMode !== 'never' && store.maxScrollY > 0 && (
         <ScrollBarY store={store} />
       )}
     </div>

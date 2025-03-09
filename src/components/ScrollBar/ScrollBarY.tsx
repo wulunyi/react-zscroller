@@ -3,7 +3,22 @@ import { observer } from 'mobx-react-lite';
 import type { ScrollerStore } from '../../store';
 
 interface ScrollBarYProps {
-  store: ScrollerStore;
+  store: Pick<ScrollerStore, 
+    'scrollX' | 
+    'scrollY' | 
+    'maxScrollY' | 
+    'viewportHeight' | 
+    'contentHeight' |
+    'isDragging' | 
+    'isScrollbarVisible' | 
+    'isScrolling' |
+    'isScrollbarHovered' |
+    'options' | 
+    'scrollTo' |
+    'calculateThumbSizeRatio' |
+    'setScrollbarHovered' |
+    'hideScrollbars'
+  >;
 }
 
 export const ScrollBarY: React.FC<ScrollBarYProps> = observer(({ store }) => {
@@ -36,6 +51,17 @@ export const ScrollBarY: React.FC<ScrollBarYProps> = observer(({ store }) => {
     
     const handleMouseUp = () => {
       isDragging.current = false;
+      
+      // 拖动结束后延迟一小段时间再触发隐藏滚动条的逻辑
+      if (store.options.scrollbarMode === 'scrolling') {
+        setTimeout(() => {
+          // 确保没有新的滚动或拖动发生
+          if (!store.isDragging && !store.isScrolling && !store.isScrollbarHovered) {
+            store.hideScrollbars();
+          }
+        }, store.options.scrollbarFadeDelay);
+      }
+      
       document.removeEventListener('mousemove', handleMouseMove);
       document.removeEventListener('mouseup', handleMouseUp);
     };
@@ -59,19 +85,32 @@ export const ScrollBarY: React.FC<ScrollBarYProps> = observer(({ store }) => {
     store.scrollTo(store.scrollX, targetScrollY, true);
   }, [store]);
   
+  // 添加鼠标悬停处理
+  const handleMouseEnter = useCallback(() => {
+    // 通知store鼠标正在滚动条上
+    store.setScrollbarHovered(true);
+  }, [store]);
+  
+  const handleMouseLeave = useCallback(() => {
+    // 通知store鼠标离开滚动条
+    store.setScrollbarHovered(false);
+  }, [store]);
+  
   return (
     <div 
-      className={`react-scroller-scrollbar react-scroller-scrollbar-y ${store.isScrollbarVisible || store.isDragging ? 'visible' : ''}`}
+      className={`react-scroller-scrollbar react-scroller-scrollbar-y ${
+        store.isScrollbarVisible ? 'visible' : ''
+      } ${store.isDragging ? 'active' : ''}`}
       style={{
-        opacity: store.isDragging ? store.options.scrollbarActiveOpacity : store.options.scrollbarOpacity,
-        width: `${store.options.scrollbarSize}px`,
+        width: `${store.options.scrollbarSize}px`
       }}
       onClick={handleTrackClick}
+      onMouseEnter={handleMouseEnter}
+      onMouseLeave={handleMouseLeave}
     >
       <div 
         className="react-scroller-indicator"
         style={{
-          backgroundColor: store.options.scrollbarColor,
           height: `${thumbHeight}%`,
           top: `${thumbPosition}%`,
         }}

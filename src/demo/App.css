@@ -54,4 +54,44 @@ footer {
   .demo-section {
     margin-bottom: 30px;
   }
+}
+
+/* 添加四分之一宽度的容器 */
+.demo-quarter {
+  flex: 0 0 calc(25% - 20px);
+  margin: 10px;
+  box-sizing: border-box;
+}
+
+/* 主题颜色 - 添加橙色主题 */
+.theme-orange {
+  background: linear-gradient(135deg, #ff9900, #ff5500);
+  color: white;
+}
+
+/* 添加小尺寸内容容器 */
+.content-small {
+  padding: 15px;
+  border-radius: 8px;
+  min-height: 400px;
+}
+
+/* 调整行显示 */
+.demos-row {
+  display: flex;
+  flex-wrap: wrap;
+  margin: -10px;
+}
+
+/* 响应式调整 */
+@media (max-width: 1200px) {
+  .demo-quarter {
+    flex: 0 0 calc(50% - 20px);
+  }
+}
+
+@media (max-width: 600px) {
+  .demo-quarter {
+    flex: 0 0 100%;
+  }
 } 
