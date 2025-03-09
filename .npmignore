@@ -1,0 +1,35 @@
+# 开发和构建文件
+node_modules
+src
+public
+.github
+.vscode
+.idea
+*.log
+*.lock
+
+# 配置文件
+.eslintrc*
+.prettierrc*
+tsconfig*.json
+vite.config.ts
+rollup.config.js
+*.config.js
+*.config.ts
+
+# 测试文件
+tests
+__tests__
+*.test.ts
+*.test.tsx
+*.spec.ts
+*.spec.tsx
+
+# 源代码控制
+.git
+.gitignore
+
+# 临时文件
+coverage
+tmp
+temp 

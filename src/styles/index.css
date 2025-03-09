@@ -1,0 +1,64 @@
+.react-scroller-container {
+  -webkit-user-select: none;
+  user-select: none;
+  -webkit-touch-callout: none;
+  position: relative;
+  overflow: hidden;
+}
+
+.react-scroller-content {
+  will-change: transform;
+  transform-origin: 0 0;
+}
+
+.react-scroller-scrollbar {
+  position: absolute;
+  z-index: 100;
+  background: rgba(0, 0, 0, 0.1);
+  border-radius: 3px;
+  transition: opacity 0.3s;
+}
+
+.react-scroller-scrollbar-x {
+  left: 2px;
+  bottom: 2px;
+  right: 2px;
+  height: 6px;
+}
+
+.react-scroller-scrollbar-y {
+  top: 2px;
+  right: 2px;
+  bottom: 2px;
+  width: 6px;
+}
+
+.react-scroller-indicator {
+  position: absolute;
+  background: rgba(0, 0, 0, 0.4);
+  border-radius: 3px;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.react-scroller-scrollbar-x .react-scroller-indicator {
+  height: 100%;
+  left: 0;
+}
+
+.react-scroller-scrollbar-y .react-scroller-indicator {
+  width: 100%;
+  top: 0;
+}
+
+.react-scroller-scrollbar.visible {
+  opacity: 1 !important;
+}
+
+.react-scroller-indicator:hover {
+  background: rgba(0, 0, 0, 0.6);
+}
+
+.react-scroller-indicator:active {
+  background: rgba(0, 0, 0, 0.75);
+} 
