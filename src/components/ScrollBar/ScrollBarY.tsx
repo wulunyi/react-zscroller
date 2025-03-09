@@ -17,7 +17,9 @@ interface ScrollBarYProps {
     'scrollTo' |
     'calculateThumbSizeRatio' |
     'setScrollbarHovered' |
-    'hideScrollbars'
+    'hideScrollbars' |
+    'startDrag' |
+    'endDrag'
   >;
 }
 
@@ -36,6 +38,7 @@ export const ScrollBarY: React.FC<ScrollBarYProps> = observer(({ store }) => {
   // 处理滑块拖动
   const handleMouseDown = useCallback((e: React.MouseEvent) => {
     isDragging.current = true;
+    store.startDrag(); // 通知 store 开始拖动
     startMouseY.current = e.clientY;
     startScrollY.current = store.scrollY;
     
@@ -70,11 +73,13 @@ export const ScrollBarY: React.FC<ScrollBarYProps> = observer(({ store }) => {
         cancelAnimationFrame(animationFrameId);
       }
       
-      // 拖动结束后延迟一小段时间再触发隐藏滚动条的逻辑
+      // 告诉 store 拖动结束
+      store.endDrag(0, 0);
+      
+      // 强制延迟隐藏滚动条(仅在scrolling模式)
       if (store.options.scrollbarMode === 'scrolling') {
         setTimeout(() => {
-          // 确保没有新的滚动或拖动发生
-          if (!store.isDragging && !store.isScrolling && !store.isScrollbarHovered) {
+          if (!store.isScrolling && !store.isDragging) {
             store.hideScrollbars();
           }
         }, store.options.scrollbarFadeDelay);

@@ -16,7 +16,9 @@ interface ScrollBarXProps {
     'options' | 
     'scrollTo' |
     'setScrollbarHovered' |
-    'hideScrollbars'
+    'hideScrollbars' |
+    'startDrag' |
+    'endDrag'
   >;
 }
 
@@ -32,6 +34,7 @@ export const ScrollBarX: React.FC<ScrollBarXProps> = observer(({ store }) => {
   // 处理滑块拖动
   const handleMouseDown = useCallback((e: React.MouseEvent) => {
     isDragging.current = true;
+    store.startDrag(); // 通知 store 开始拖动
     startMouseX.current = e.clientX;
     startScrollX.current = store.scrollX;
     
@@ -48,15 +51,8 @@ export const ScrollBarX: React.FC<ScrollBarXProps> = observer(({ store }) => {
     const handleMouseUp = () => {
       isDragging.current = false;
       
-      // 拖动结束后延迟一小段时间再触发隐藏滚动条的逻辑
-      if (store.options.scrollbarMode === 'scrolling') {
-        setTimeout(() => {
-          // 确保没有新的滚动或拖动发生
-          if (!store.isDragging && !store.isScrolling && !store.isScrollbarHovered) {
-            store.hideScrollbars();
-          }
-        }, store.options.scrollbarFadeDelay);
-      }
+      // 告诉 store 拖动结束
+      store.endDrag(0, 0);
       
       document.removeEventListener('mousemove', handleMouseMove);
       document.removeEventListener('mouseup', handleMouseUp);

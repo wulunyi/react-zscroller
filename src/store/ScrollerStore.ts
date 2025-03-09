@@ -302,9 +302,11 @@ export class ScrollerStore {
     this.isScrolling = false;
     this.options.onScrollEnd();
     
-    // 在回调后处理滚动条隐藏逻辑
-    if (this.options.scrollbarMode === 'scrolling' && !this.isScrollbarHovered) {
+    // 解决拖动滚动条后不消失的问题
+    if (this.options.scrollbarMode === 'scrolling') {
+      // 延迟一小段时间再隐藏滚动条，给用户操作留出空间
       setTimeout(() => {
+        // 重新检查状态，确保不会在用户继续交互时隐藏
         if (!this.isDragging && !this.isScrolling && !this.isScrollbarHovered) {
           this.hideScrollbars();
         }
