@@ -11,80 +11,81 @@
   transform-origin: 0 0;
 }
 
-/* 滚动条基础样式 - 默认隐藏 */
+/* 滚动条基础样式 - 默认显示指示器模式 */
 .react-scroller-scrollbar {
   position: absolute;
   z-index: 100;
-  background: rgba(0, 0, 0, 0.1);
-  border-radius: 3px;
-  opacity: 0; /* 默认隐藏整个滚动条 */
-  transition: opacity 0.2s ease-out;
-  pointer-events: none; /* 默认不接收鼠标事件 */
+  background: transparent; /* 默认轨道透明 */
+  border-radius: 4px;
+  opacity: 0; /* 默认隐藏 */
+  transition: opacity 0.15s ease, background-color 0.15s ease;
+  pointer-events: none;
 }
 
 /* 当滚动条可见时 */
 .react-scroller-scrollbar.visible {
   opacity: 1;
-  pointer-events: auto; /* 可见时接收鼠标事件 */
+  pointer-events: auto;
 }
 
-.react-scroller-scrollbar-x {
-  left: 2px;
-  bottom: 2px;
-  right: 2px;
-  height: 6px;
+/* 当滚动条处于拖动状态时显示轨道 */
+.react-scroller-scrollbar.active {
+  background: rgba(0, 0, 0, 0.05); /* 拖动时显示轨道背景 */
 }
 
-.react-scroller-scrollbar-y {
-  top: 2px;
-  right: 2px;
-  bottom: 2px;
-  width: 6px;
-}
-
+/* 指示器始终可见 */
 .react-scroller-indicator {
   position: absolute;
-  background: rgba(0, 0, 0, 0.4);
-  border-radius: 3px;
-  cursor: pointer;
-  transition: background-color 0.2s ease-out;
+  background: rgba(0, 0, 0, 0.3);
+  border-radius: 4px;
+  transition: background-color 0.15s ease;
 }
 
+/* 已经不需要特殊指示器模式，因为默认就是只显示指示器 */
+.react-scroller-scrollbar.indicator-only {
+  background: transparent !important;
+}
+
+/* 悬停时轨道效果 */
+.react-scroller-scrollbar:hover:not(.indicator-only) {
+  background: rgba(0, 0, 0, 0.05);
+}
+
+/* 悬停时指示器效果 */
+.react-scroller-scrollbar:hover .react-scroller-indicator {
+  background: rgba(0, 0, 0, 0.45);
+}
+
+/* 拖动时指示器效果 */
+.react-scroller-scrollbar.active .react-scroller-indicator,
+.react-scroller-indicator:active {
+  background: rgba(0, 0, 0, 0.6);
+}
+
+/* X方向滚动条位置 */
+.react-scroller-scrollbar-x {
+  bottom: 2px; /* 轻微调整位置 */
+  left: 4px;
+  right: 4px;
+  height: 6px; /* 固定高度 */
+}
+
+/* Y方向滚动条位置 */
+.react-scroller-scrollbar-y {
+  right: 2px; /* 轻微调整位置 */
+  top: 4px;
+  bottom: 4px;
+  width: 6px; /* 固定宽度 */
+}
+
+/* 重新添加 X 方向指示器样式 */
 .react-scroller-scrollbar-x .react-scroller-indicator {
   height: 100%;
   left: 0;
 }
 
+/* 重新添加 Y 方向指示器样式 */
 .react-scroller-scrollbar-y .react-scroller-indicator {
   width: 100%;
   top: 0;
-}
-
-/* 当只显示指示器时的特殊样式 - 增加特异性 */
-.react-scroller-scrollbar.indicator-only {
-  background: transparent !important; /* 确保覆盖其他样式 */
-}
-
-/* 单独设置指示器样式，确保在轨道透明时仍可见 */
-.react-scroller-scrollbar.indicator-only .react-scroller-indicator {
-  background: rgba(0, 0, 0, 0.4);
-}
-
-/* 在悬停时增强指示器可见度 */
-.react-scroller-scrollbar.indicator-only:hover .react-scroller-indicator {
-  background: rgba(0, 0, 0, 0.6);
-}
-
-/* 悬停效果 */
-.react-scroller-scrollbar:not(.indicator-only):hover {
-  background: rgba(0, 0, 0, 0.15);
-}
-
-.react-scroller-scrollbar:hover .react-scroller-indicator {
-  background: rgba(0, 0, 0, 0.6);
-}
-
-.react-scroller-scrollbar.active .react-scroller-indicator,
-.react-scroller-indicator:active {
-  background: rgba(0, 0, 0, 0.75);
 } 
